@@ -2,7 +2,8 @@ from numpy import empty_like
 import pandas
 import pafy
 from googleapiclient.discovery import build
- 
+from utils import createDirectory 
+#유튜브 영상 댓글 수집
  
 api_key = 'AIzaSyDKxTiE9QdseNW29_P4fSyPX0K1M7QxV-c'
 video_id = '2KxEIeVNOtQ'
@@ -14,6 +15,9 @@ v = pafy.new(video_id)
 title = v.title
 author = v.author
 published = v.published
+
+directory ="C:/Users/KimJihong/Desktop/김지홍/개발/댓글/{}".format(author)
+createDirectory(directory)
 
 api_obj = build('youtube', 'v3', developerKey=api_key)
 response = api_obj.commentThreads().list(part='snippet,replies', videoId=video_id, maxResults=100).execute()
@@ -49,7 +53,8 @@ while response:
         break
  
 df_comments = pandas.DataFrame(comments)
-df_comments.to_csv('C:/Users/KimJihong/Desktop/김지홍/개발/댓글/{}.csv'.format(title), header=['comment', 'author', 'date', 'num_likes'], index=None)
+df_comments.to_csv(directory + '/{}.csv'.format(title), header=['comment', 'author', 'date', 'num_likes'], index=None)
 
-df_shorts = pandas.DataFrame(shorts)
-df_shorts.to_csv('C:/Users/KimJihong/Desktop/김지홍/개발/댓글/{}_shorts.csv'.format(title), header=['author','time', 'content', 'num_likes'], index=None)
+if(len(shorts) > 0):
+    df_shorts = pandas.DataFrame(shorts).sort_values(by=3, ascending=False)
+    df_shorts.to_csv(directory + '/{}_shorts.csv'.format(title), header=['author','time', 'content', 'num_likes'], index=None)
